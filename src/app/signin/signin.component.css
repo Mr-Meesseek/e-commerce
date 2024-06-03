@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Karla:wght@200;300;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css');
+
+:root {
+  --default-font-family: 'Inter', sans-serif;
+  --primary-color: #007bff;
+  --secondary-color: #ffffff;
+  --background-color: #f3f6f9;
+  --text-color: #333333;
+  --accent-color: #ff6b6b;
+  --error-color: #ff6b6b;
+  --input-border-color: #dddddd;
+}
+
+body {
+  margin: 0;
+  font-family: var(--default-font-family);
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, #f3f6f9, #0247dd);
+  padding-top: 80px; /* Add padding to account for the fixed navbar */
+}
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(190deg, #0247dd, #ffffff);
+  padding: 10px 20px;
+  color: white; /* Use a solid color for text */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000; /* Ensure the navbar stays on top */
+}
+
+.logo img {
+  height: 40px;
+}
+
+.nav {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: var(--text-color);
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.nav-link.active {
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.nav-link:hover {
+  color: var(--primary-color);
+}
+
+.content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  margin-top: 40px;
+}
+
+.form-container {
+  width: 100%;
+  background-color: var(--secondary-color);
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  background: linear-gradient(135deg, #f3f6f9, #0247dd);
+}
+
+.form-container h2 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--primary-color);
+}
+
+.form-container p {
+  font-size: 16px;
+  color: #666666;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.form-control {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid var(--input-border-color);
+  border-radius: 5px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: var(--primary-color);
+  outline: none;
+}
+
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.btn {
+  padding: 15px 30px;
+  background-color: var(--primary-color);
+  color: var(--secondary-color);
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+.btn:hover {
+  background-color: #ffffff;
+}
+
+.error-message {
+  color: rgb(201, 0, 0);
+  margin-top: 10px;
+  font-size: 0.9em;
+}

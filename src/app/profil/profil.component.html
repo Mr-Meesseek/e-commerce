@@ -1,0 +1,118 @@
+<div class="user-management">
+  <div class="navbar">
+    <div class="logo">
+      <img src="../../assets/Logo.png" alt="X-MALL Logo">
+    </div>
+    <div class="profile-info">
+      <span>{{ loggedInUser }}</span>
+      <button class="logout-button" (click)="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <div class="sidebar">
+      <button (click)="showSection('unconfirmedOrders')">
+        <i class="fas fa-list"></i> Unconfirmed Orders
+      </button>
+      <button (click)="showSection('addUser')">
+        <i class="fas fa-user-plus"></i> Add User
+      </button>
+      <button (click)="showSection('userList')">
+        <i class="fas fa-users"></i> User List
+      </button>
+    </div>
+
+    <div class="content">
+      <div *ngIf="activeSection === 'unconfirmedOrders'" class="unconfirmed-orders">
+        <div class="order-list">
+          <h3>Unconfirmed Orders</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>User ID Card</th>
+                <th>Product SKUs</th>
+                <th>Facilite</th>
+                <th>Product Quantities</th>
+                <th>Total Price</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of orders">
+                <td>{{ order.id }}</td>
+                <td>{{ order.user_id_card }}</td>
+                <td>{{ order.product_skus.join(', ') }}</td>
+                <td>{{ order.facilite.join(', ') }}</td>
+                <td>{{ order.product_quantities.join(', ') }}</td>
+                <td>{{ order.total_price }}</td>
+                <td>
+                  <button class="confirm-button" (click)="confirmOrder(order.id)">Confirm</button>
+                  <button class="decline-button" (click)="declineOrder(order.id)">Decline</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div *ngIf="activeSection === 'addUser'" class="add-user">
+        <div class="add-user-form">
+          <h3>Add User</h3>
+          <input [(ngModel)]="newUser.id_card_number" placeholder="ID Card Number">
+          <input [(ngModel)]="newUser.worker_number" placeholder="Worker Number">
+          <input [(ngModel)]="newUser.name" placeholder="Name">
+          <input [(ngModel)]="newUser.email" placeholder="Email">
+          <button class="add-button" (click)="addUser()">Add User</button>
+        </div>
+      </div>
+
+      <div *ngIf="activeSection === 'editUser' && editingUser" class="edit-user">
+        <div class="edit-user-form">
+          <h3>Edit User</h3>
+          <input [(ngModel)]="editingUser.id_card_number" placeholder="ID Card Number">
+          <input [(ngModel)]="editingUser.worker_number" placeholder="Worker Number">
+          <input [(ngModel)]="editingUser.name" placeholder="Name">
+          <input [(ngModel)]="editingUser.email" placeholder="Email">
+          <button class="edit-button" (click)="updateUser()">Update User</button>
+          <button class="cancel-button" (click)="editingUser = null; showSection('userList')">Cancel</button>
+        </div>
+      </div>
+
+      <div *ngIf="activeSection === 'userList'" class="user-list">
+        <h3>User List</h3>
+        <div class="search-section">
+          <input [(ngModel)]="searchCardNumber" placeholder="Search by ID Card Number" (input)="searchUsers()">
+          <span>Total Users: {{ getTotalUsers() }}</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>ID Card Number</th>
+              <th>Worker Number</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of filteredUsers">
+              <td>{{ user.id }}</td>
+              <td>{{ user.id_card_number }}</td>
+              <td>{{ user.worker_number }}</td>
+              <td>{{ user.name }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.role }}</td>
+              <td>
+                <button class="edit-button" (click)="editUser(user)">Edit</button>
+                <button class="delete-button" (click)="deleteUser(user.id)">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

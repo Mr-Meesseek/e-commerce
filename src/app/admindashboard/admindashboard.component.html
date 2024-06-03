@@ -1,0 +1,280 @@
+<div class="user-management">
+  <div class="navbar">
+    <div class="logo">
+      <img src="../../assets/Logo.png" alt="X-MALL Logo">
+    </div>
+    <div class="profile-info">
+      <span>{{ loggedInUser }}</span>
+      <button class="logout-button" (click)="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- Alert message section -->
+  <div *ngIf="showAlert" class="alert" [ngClass]="alertType">
+    {{ alertMessage }}
+  </div>
+
+  <div class="main-container">
+    <div class="sidebar">
+      <button (click)="showSection('confirmedOrders')">
+        <i class="fas fa-list"></i> Confirmed Orders
+      </button>
+      
+      <button (click)="showSection('userList')">
+        <i class="fas fa-users"></i> User List
+      </button>
+      <button (click)="showSection('products')">
+        <i class="fas fa-box"></i> Products
+      </button>
+      <button (click)="showSection('categories')">
+        <i class="fas fa-tags"></i> Categories
+      </button>
+      
+      <button (click)="showSection('photos')">
+        <i class="fas fa-camera"></i> News
+      </button>
+      <button (click)="showSection('addUser')">
+        <i class="fas fa-user-plus"></i> Add User
+      </button>
+      <button (click)="showSection('addProduct')">
+        <i class="fas fa-plus"></i> Add Product
+      </button>
+     
+      <button (click)="showSection('addCategory')">
+        <i class="fas fa-plus"></i> Add Category
+      </button>
+    
+      <button (click)="showSection('addPhoto')">
+        <i class="fas fa-plus"></i> Add News
+      </button>
+    </div>
+
+    <div class="content">
+      <div *ngIf="activeSection === 'confirmedOrders'" class="confirmed-orders">
+        <div class="order-summary">
+          <div class="card">
+            <h4>Total Confirmed Orders</h4>
+            <p>{{ totalConfirmedOrders }}</p>
+          </div>
+          <div class="card">
+            <h4>Total Price of Confirmed Orders</h4>
+            <p>{{ totalPriceOfConfirmedOrders }}</p>
+          </div>
+          <div class="card">
+            <h4>Most Frequent Product</h4>
+            <div *ngIf="mostFrequentProduct">
+              <img [src]="'data:image/png;base64,' + mostFrequentProduct.image_base64" alt="{{ mostFrequentProduct.name }}">
+              <p><strong>{{ mostFrequentProduct.name }}</strong></p>
+              <p>SKU: {{ mostFrequentProduct.sku }}</p>
+            </div>
+            <p *ngIf="!mostFrequentProduct">No product data available</p>
+          </div>
+        </div>
+        
+        <div class="order-list">
+          <h3>Confirmed Orders</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>name</th>
+                <th>Address</th>
+                  <th>Phone</th>
+                <th>postal code </th>
+
+                <th>User ID Card</th>
+                <th>Product SKUs</th>
+                <th>Facilite</th>
+                <th>Product Quantities</th>
+                <th>Total Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of orders">
+                <td>{{ order.id }}</td>
+                <td>{{ order.name}}</td>
+                <td>{{order.address}}</td>
+                <td>{{ order.phone_number }}</td>
+                <td>{{ order.postal_code }}</td>
+                <td>{{ order.user_id_card }}</td>
+                <td>{{ order.product_skus?.join(', ') }}</td>
+                <td>{{ order.facilite?.join(', ') }}</td>
+                <td>{{ order.product_quantities?.join(', ') }}</td>
+                <td>{{ order.total_price }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div *ngIf="activeSection === 'addUser'" class="add-user">
+        <div class="add-user-form">
+          <h3>Add User</h3>
+          <input [(ngModel)]="newUser.id_card_number" placeholder="ID Card Number">
+          <input [(ngModel)]="newUser.worker_number" placeholder="Worker Number">
+          <input [(ngModel)]="newUser.name" placeholder="Name">
+          <input [(ngModel)]="newUser.email" placeholder="Email">
+          <select [(ngModel)]="newUser.role">
+            <option value="SuperEmployee">SuperEmployee</option>
+            <option value="Employee">Employee</option>
+          </select>
+          <button class="add-button" (click)="addUser()">Add User</button>
+        </div>
+      </div>
+
+      <div *ngIf="activeSection === 'editUser' && editingUser" class="edit-user">
+        <div class="edit-user-form">
+          <h3>Edit User</h3>
+          <input [(ngModel)]="editingUser.id_card_number" placeholder="ID Card Number">
+          <input [(ngModel)]="editingUser.worker_number" placeholder="Worker Number">
+          <input [(ngModel)]="editingUser.name" placeholder="Name">
+          <input [(ngModel)]="editingUser.email" placeholder="Email">
+          <select [(ngModel)]="editingUser.role">
+            <option value="employee">Employee</option>
+            <option value="admin">Admin</option>
+          </select>
+          <button class="edit-button" (click)="updateUser()">Update User</button>
+          <button class="cancel-button" (click)="editingUser = null; showSection('userList')">Cancel</button>
+        </div>
+      </div>
+
+      <div *ngIf="activeSection === 'userList'" class="user-list">
+        <h3>User List</h3>
+        <div class="search-section">
+          <input [(ngModel)]="searchCardNumber" placeholder="Search by ID Card Number" (input)="searchUsers()">
+          <span>Total Users: {{ getTotalUsers() }}</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>ID Card Number</th>
+              <th>Worker Number</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of filteredUsers">
+              <td>{{ user.id }}</td>
+              <td>{{ user.id_card_number }}</td>
+              <td>{{ user.worker_number }}</td>
+              <td>{{ user.name }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.role }}</td>
+              <td>
+                <button class="edit-button" (click)="editUser(user)">Edit</button>
+                <button class="delete-button" (click)="deleteUser(user.id)">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="activeSection === 'products'" class="products">
+        <h3>Products</h3>
+        <div class="search-section">
+          <input [(ngModel)]="searchSku" placeholder="Search by SKU" (input)="searchProducts()">
+          <span>Total Products: {{ getTotalProducts() }}</span>
+        </div>
+        <div class="product-list">
+          <div class="product-card" *ngFor="let product of filteredProducts">
+            <img [src]="'data:image/png;base64,' + product.image_base64" alt="{{ product.name }}">
+            <div class="product-info">
+              <h4>{{ product.name }}</h4>
+              <p><strong>SKU:</strong> {{ product.sku }}</p>
+              <details>
+                <summary>See more</summary>
+                <p><strong>Price:</strong> {{ product.price }}</p>
+                <p><strong>Description:</strong> {{ product.description }}</p>
+                <p><strong>Category:</strong> {{ product.category }}</p>
+                <p><strong>Quantity:</strong> {{ product.quantity }}</p>
+                <p><strong>Available:</strong> {{ product.available ? 'Yes' : 'No' }}</p>
+                <p><strong>Key Words:</strong> {{ product.Key_Words }}</p>
+              </details>
+              <div class="card-actions">
+                <button class="edit-button" (click)="editProduct(product)">Update</button>
+                <button class="delete-button" (click)="deleteProduct(product.id)">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="activeSection === 'addProduct'" class="add-product">
+        <div class="add-product-form">
+          <h3>Add Product</h3>
+          <input [(ngModel)]="newProduct.sku" placeholder="SKU">
+          <input [(ngModel)]="newProduct.name" placeholder="Name">
+          <input [(ngModel)]="newProduct.price" placeholder="Price">
+          <textarea [(ngModel)]="newProduct.description" placeholder="Description"></textarea>
+          <input [(ngModel)]="newProduct.category" placeholder="Category">
+          <input type="file" (change)="onFileSelected($event)">
+          <input [(ngModel)]="newProduct.quantity" placeholder="Quantity">
+          <input [(ngModel)]="newProduct.available" type="checkbox"> Available
+          <input [(ngModel)]="newProduct.Key_Words" placeholder="Key Words">
+          <button class="add-button" (click)="addProduct()">Add Product</button>
+        </div>
+      </div>
+
+      <div *ngIf="activeSection === 'editProduct' && editingProduct" class="edit-product">
+        <div class="edit-product-form">
+          <h3>Edit Product</h3>
+          <input [(ngModel)]="editingProduct.sku" placeholder="SKU">
+          <input [(ngModel)]="editingProduct.name" placeholder="Name">
+          <input [(ngModel)]="editingProduct.price" placeholder="Price">
+          <textarea [(ngModel)]="editingProduct.description" placeholder="Description"></textarea>
+          <input [(ngModel)]="editingProduct.category" placeholder="Category">
+          <input type="file" (change)="onFileSelected($event)">
+          <input [(ngModel)]="editingProduct.quantity" placeholder="Quantity">
+          <input [(ngModel)]="editingProduct.available" type="checkbox"> Available
+          <input [(ngModel)]="editingProduct.Key_Words" placeholder="Key Words">
+          <button class="edit-button" (click)="updateProduct(editingProduct.id);">Update Product</button>
+          <button class="cancel-button" (click)="editingProduct = null; showSection('products')">Cancel</button>
+        </div>
+      </div>
+
+      <div *ngIf="activeSection === 'categories'" class="categories">
+        <h3>Categories</h3>
+        <div class="category-list">
+          <div class="category-card" *ngFor="let category of categories">
+            <h4>{{ category.title }}</h4>
+            <img *ngIf="category.image_base64" [src]="'data:image/png;base64,' + category.image_base64" alt="{{ category.title }}">
+            <button class="delete-button" (click)="deleteCategory(category.title)">Delete</button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="activeSection === 'addCategory'" class="add-category">
+        <div class="add-category-form">
+          <h3>Add Category</h3>
+          <input [(ngModel)]="newCategory.title" placeholder="Title">
+          <input type="file" (change)="onFileSelected($event)">
+          <button class="add-button" (click)="addCategory()">Add Category</button>
+        </div>
+      </div>
+
+      <div *ngIf="activeSection === 'photos'" class="photos">
+        <h3>Photos</h3>
+        <div class="photo-list">
+          <div class="photo-card" *ngFor="let photo of photos">
+            <img [src]="'data:image/png;base64,' + photo.image_base64" alt="Photo">
+            <button class="delete-button" (click)="deletePhoto(photo.id)">Delete</button>
+          </div>
+        </div>
+
+        <div class="card-actions"></div>
+      </div>
+
+      <div *ngIf="activeSection === 'addPhoto'" class="add-photo">
+        <div class="add-photo-form">
+          <h3>Add Photo</h3>
+          <input type="file" (change)="onFileSelected($event)">
+          <button class="add-button" (click)="addPhoto()">Add Photo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

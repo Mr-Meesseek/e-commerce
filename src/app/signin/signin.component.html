@@ -1,0 +1,25 @@
+<div class="main-container">
+  <div class="navbar">
+    <div class="logo">
+      <img src="../../assets/Logo.png" alt="X-MALL Logo">
+    </div>
+    
+  </div>
+
+  <div class="content">
+    <div class="form-container">
+      <h2>Bienvenu</h2>
+      <p>Veuillez vous connecter à votre compte</p>
+      <div class="form-group">
+        <input type="text" class="form-control" [(ngModel)]="email" placeholder="Votre email">
+      </div>
+      <div class="form-group">
+        <input type="password" class="form-control" [(ngModel)]="worker_number" placeholder="Mot de passe">
+      </div>
+      <div class="form-actions">
+        <button class="btn" (click)="signIn()">Sign In</button>
+        <span *ngIf="errorMessage" class="error-message">{{ errorMessage }}</span>
+      </div>
+    </div>
+  </div>
+</div>
