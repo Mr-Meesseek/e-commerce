@@ -28,5 +28,5 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
 =======
 # e-commerce
-flutter + fastapi 
+
 >>>>>>> b5ffbd6c0548d136a147bde065ef305c9f5fa030
