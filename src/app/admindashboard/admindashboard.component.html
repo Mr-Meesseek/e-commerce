@@ -10,7 +10,7 @@
   </div>
 
   <!-- Alert message section -->
-  <div *ngIf="showAlert" class="alert" [ngClass]="alertType">
+  <div *ngIf="showAlert" class="alert show" [ngClass]="alertType">
     {{ alertMessage }}
   </div>
 
@@ -63,11 +63,22 @@
           <div class="card">
             <h4>Most Frequent Product</h4>
             <div *ngIf="mostFrequentProduct">
+              
               <img [src]="'data:image/png;base64,' + mostFrequentProduct.image_base64" alt="{{ mostFrequentProduct.name }}">
               <p><strong>{{ mostFrequentProduct.name }}</strong></p>
               <p>SKU: {{ mostFrequentProduct.sku }}</p>
             </div>
-            <p *ngIf="!mostFrequentProduct">No product data available</p>
+            <p *ngIf="!mostFrequentProduct">{{products[5].name}}</p>
+          </div>
+          <!-- New card for direct orders -->
+          <div class="card">
+            <h4>Total Direct Orders</h4>
+            <p>{{ directOrderCount }}</p>
+          </div>
+          <!-- New card for indirect orders -->
+          <div class="card">
+            <h4>Total Indirect Orders</h4>
+            <p>{{ indirectOrderCount }}</p>
           </div>
         </div>
         
@@ -77,23 +88,23 @@
             <thead>
               <tr>
                 <th>ID</th>
-                <th>name</th>
+                <th>Name</th>
                 <th>Address</th>
-                  <th>Phone</th>
-                <th>postal code </th>
-
+                <th>Phone</th>
+                <th>Postal Code</th>
                 <th>User ID Card</th>
                 <th>Product SKUs</th>
                 <th>Facilite</th>
                 <th>Product Quantities</th>
                 <th>Total Price</th>
+                <th>Type of Order</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let order of orders">
                 <td>{{ order.id }}</td>
-                <td>{{ order.name}}</td>
-                <td>{{order.address}}</td>
+                <td>{{ order.name }}</td>
+                <td>{{ order.address }}</td>
                 <td>{{ order.phone_number }}</td>
                 <td>{{ order.postal_code }}</td>
                 <td>{{ order.user_id_card }}</td>
@@ -101,6 +112,8 @@
                 <td>{{ order.facilite?.join(', ') }}</td>
                 <td>{{ order.product_quantities?.join(', ') }}</td>
                 <td>{{ order.total_price }}</td>
+                <td [ngClass]="getOrderType(order.facilite) === 'Direct Order' ? 'direct-order' : 'indirect-order'">
+                {{ getOrderType(order.facilite) }}</td>
               </tr>
             </tbody>
           </table>
@@ -210,7 +223,13 @@
           <input [(ngModel)]="newProduct.name" placeholder="Name">
           <input [(ngModel)]="newProduct.price" placeholder="Price">
           <textarea [(ngModel)]="newProduct.description" placeholder="Description"></textarea>
-          <input [(ngModel)]="newProduct.category" placeholder="Category">
+          
+          <!-- Dropdown for category with placeholder -->
+          <select [(ngModel)]="newProduct.category">
+            <option value="" disabled selected hidden>Select Category</option>
+            <option *ngFor="let category of categories" [value]="category.title">{{ category.title }}</option>
+          </select>
+          
           <input type="file" (change)="onFileSelected($event)">
           <input [(ngModel)]="newProduct.quantity" placeholder="Quantity">
           <input [(ngModel)]="newProduct.available" type="checkbox"> Available

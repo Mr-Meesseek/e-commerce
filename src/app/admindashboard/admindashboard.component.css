@@ -129,7 +129,7 @@ h2, h3 {
   font-weight: 700;
 }
 
-input {
+input, select, textarea {
   display: block;
   margin-bottom: 10px;
   padding: 10px;
@@ -137,6 +137,13 @@ input {
   border-radius: 4px;
   width: 100%;
   font-size: 14px;
+}
+
+select {
+  appearance: none;
+  background: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="gray"><polygon points="0,0 20,0 10,10"/></svg>') no-repeat right center;
+  background-size: 10px;
+  padding-right: 30px;
 }
 
 button {
@@ -219,7 +226,7 @@ tr:nth-child(even) {
   background-color: #fff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s, box-shadow 0.3s;
-  height: 450px; /* Adjust height as needed */
+  height: auto; /* Adjust height as needed */
   overflow: hidden;
   position: relative;
 }
@@ -237,6 +244,7 @@ tr:nth-child(even) {
   max-width: 100%;
   border-bottom: 1px solid #ddd;
   margin-bottom: 10px;
+  max-height: 50%;
 }
 
 .product-info,
@@ -296,6 +304,7 @@ summary {
   text-align: center;
   flex: 1;
 }
+
 .card {
   display: flex;
   flex-direction: column;
@@ -312,8 +321,44 @@ summary {
   font-size: larger;
 }
 
-
 .order-summary .card img {
   max-width: 100px;
   margin-bottom: 10px;
 }
+
+/* Alert message styling */
+.alert {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px;
+  border-radius: 5px;
+  font-size: 16px;
+  z-index: 1000;
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.alert.show {
+  opacity: 1;
+  transform: translateY(500);
+}
+
+.alert.success {
+  background-color: #4CAF50; 
+  color: white;
+}
+
+.alert.error {
+  background-color: #F44336; 
+  color: white;
+}
+.direct-order {
+  color: rgb(45, 180, 45);
+}
+
+.indirect-order {
+  color: rgb(4, 0, 255);
+}
+

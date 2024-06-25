@@ -1,5 +1,5 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
@@ -94,7 +94,7 @@ export interface PhotoResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API_URL = 'http://192.168.1.3:8000';  // Replace with your FastAPI base URL
+  private readonly API_URL = 'http://192.168.100.105:8000';  // Replace with your FastAPI base URL
 
   constructor(private http: HttpClient) {}
 

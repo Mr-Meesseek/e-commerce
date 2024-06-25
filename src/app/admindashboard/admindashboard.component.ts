@@ -1,8 +1,8 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
-import { RouterModule, Router } from '@angular/router';
-import { AuthService, User, FinalOrder, Product, Category, Photo, ProductResponse, CategoryResponse, PhotoResponse } from '../auth.service';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService, Category, CategoryResponse, FinalOrder, Photo, PhotoResponse, Product, ProductResponse, User } from '../auth.service';
 
 @Component({
   selector: 'app-admindashboard',
@@ -37,14 +37,16 @@ export class AdmindashboardComponent implements OnInit {
   totalConfirmedOrders: number = 0;
   totalPriceOfConfirmedOrders: number = 0;
   mostFrequentProduct: Product | null = null;
+  directOrderCount: number = 0;
+  indirectOrderCount: number = 0;
 
   constructor(private authService: AuthService, private router: Router, @Inject(PLATFORM_ID) private platformId: Object) {}
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.loadUsers();
-      this.loadConfirmedOrders();
-      this.loadProducts();
+      this.loadProducts(); // Ensure products are loaded first
+      this.loadConfirmedOrders(); // Then load confirmed orders
       this.loadCategories();
       this.loadPhotos();
       this.loggedInUser = this.authService.getUserName();
@@ -60,6 +62,10 @@ export class AdmindashboardComponent implements OnInit {
     }, 3000);
   }
 
+  getOrderType(facilite: number[]): string {
+    return facilite.some(f => f > 1) ? 'Indirect Order' : 'Direct Order';
+  }
+
   loadUsers(): void {
     this.authService.getUsers().subscribe(users => {
       this.users = users;
@@ -68,13 +74,17 @@ export class AdmindashboardComponent implements OnInit {
   }
 
   addUser(): void {
-    this.authService.addUser(this.newUser).subscribe(user => {
-      this.users.push(user);
-      this.newUser = { id: 0, id_card_number: '', worker_number: '', name: '', email: '', role: 'employee' };
-      this.filteredUsers = this.users;
-      this.displayAlert('User added successfully');
-      this.showSection('userList');
-    });
+    if (this.newUser.id_card_number && this.newUser.worker_number && this.newUser.name && this.newUser.email) {
+      this.authService.addUser(this.newUser).subscribe(user => {
+        this.users.push(user);
+        this.newUser = { id: 0, id_card_number: '', worker_number: '', name: '', email: '', role: 'employee' };
+        this.filteredUsers = this.users;
+        this.displayAlert('User added successfully');
+        this.showSection('userList');
+      });
+    } else {
+      this.displayAlert('Please fill all required fields', 'error');
+    }
   }
 
   editUser(user: User): void {
@@ -83,7 +93,7 @@ export class AdmindashboardComponent implements OnInit {
   }
 
   updateUser(): void {
-    if (this.editingUser) {
+    if (this.editingUser && this.editingUser.id_card_number && this.editingUser.worker_number && this.editingUser.name && this.editingUser.email) {
       this.authService.updateUser(this.editingUser).subscribe(updatedUser => {
         const index = this.users.findIndex(user => user.id === updatedUser.id);
         this.users[index] = updatedUser;
@@ -91,6 +101,8 @@ export class AdmindashboardComponent implements OnInit {
         this.displayAlert('User updated successfully');
         this.showSection('userList');
       });
+    } else {
+      this.displayAlert('Please fill all required fields', 'error');
     }
   }
 
@@ -121,6 +133,7 @@ export class AdmindashboardComponent implements OnInit {
       this.totalConfirmedOrders = orders.length;
       this.totalPriceOfConfirmedOrders = orders.reduce((total, order) => total + order.total_price, 0);
       this.calculateMostFrequentProduct();
+      this.calculateOrderTypes();
     });
   }
 
@@ -129,44 +142,75 @@ export class AdmindashboardComponent implements OnInit {
     let maxFrequency = 0;
     let mostFrequentSku: string | null = null;
 
+    console.log('Calculating most frequent product with orders:', this.orders);
+    console.log('And products:', this.products);
+
     this.orders.forEach(order => {
       order.product_skus.forEach(sku => {
-        if (!productFrequency[sku]) {
-          productFrequency[sku] = 0;
+        const normalizedSku = sku.trim().toUpperCase();
+        if (!productFrequency[normalizedSku]) {
+          productFrequency[normalizedSku] = 0;
         }
-        productFrequency[sku]++;
-        if (productFrequency[sku] > maxFrequency) {
-          maxFrequency = productFrequency[sku];
-          mostFrequentSku = sku;
+        productFrequency[normalizedSku]++;
+        if (productFrequency[normalizedSku] > maxFrequency) {
+          maxFrequency = productFrequency[normalizedSku];
+          mostFrequentSku = normalizedSku;
         }
       });
     });
 
     if (mostFrequentSku) {
-      this.mostFrequentProduct = this.products.find(product => product.sku === mostFrequentSku) || null;
+      console.log('Most frequent SKU:', mostFrequentSku);
+
+      // Manual search through products array
+      for (let product of this.products) {
+        if (product.sku.trim().toUpperCase() === mostFrequentSku) {
+          this.mostFrequentProduct = product;
+          break;
+        }
+      }
+      console.log('Most frequent product:', this.mostFrequentProduct);
     }
   }
 
+  calculateOrderTypes(): void {
+    this.directOrderCount = 0;
+    this.indirectOrderCount = 0;
+
+    this.orders.forEach(order => {
+      const isIndirectOrder = order.facilite.some(facilite => facilite > 1);
+      if (isIndirectOrder) {
+        this.indirectOrderCount++;
+      } else {
+        this.directOrderCount++;
+      }
+    });
+  }
+
   addProduct(): void {
-    if (this.selectedFile) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.newProduct.image_base64 = (e.target?.result as string).split(',')[1];
+    if (this.newProduct.sku && this.newProduct.name && this.newProduct.price && this.newProduct.description && this.newProduct.category && this.newProduct.quantity) {
+      if (this.selectedFile) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.newProduct.image_base64 = (e.target?.result as string).split(',')[1];
+          this.authService.addProduct(this.newProduct).subscribe(() => {
+            this.loadProducts();
+            this.resetNewProduct();
+            this.displayAlert('Product added successfully');
+            this.showSection('products');
+          });
+        };
+        reader.readAsDataURL(this.selectedFile);
+      } else {
         this.authService.addProduct(this.newProduct).subscribe(() => {
           this.loadProducts();
           this.resetNewProduct();
           this.displayAlert('Product added successfully');
           this.showSection('products');
         });
-      };
-      reader.readAsDataURL(this.selectedFile);
+      }
     } else {
-      this.authService.addProduct(this.newProduct).subscribe(() => {
-        this.loadProducts();
-        this.resetNewProduct();
-        this.displayAlert('Product added successfully');
-        this.showSection('products');
-      });
+      this.displayAlert('Please fill all required fields', 'error');
     }
   }
 
@@ -176,10 +220,21 @@ export class AdmindashboardComponent implements OnInit {
   }
 
   updateProduct(id: number): void {
-    if (this.selectedFile) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.editingProduct!.image_base64 = (e.target?.result as string).split(',')[1];
+    if (this.editingProduct && this.editingProduct.sku && this.editingProduct.name && this.editingProduct.price && this.editingProduct.description && this.editingProduct.category && this.editingProduct.quantity) {
+      if (this.selectedFile) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.editingProduct!.image_base64 = (e.target?.result as string).split(',')[1];
+          this.authService.updateProduct(id, this.editingProduct!).subscribe(updatedProduct => {
+            const index = this.products.findIndex(product => product.id === updatedProduct.id);
+            this.products[index] = updatedProduct;
+            this.editingProduct = null;
+            this.displayAlert('Product updated successfully');
+            this.showSection('products');
+          });
+        };
+        reader.readAsDataURL(this.selectedFile);
+      } else {
         this.authService.updateProduct(id, this.editingProduct!).subscribe(updatedProduct => {
           const index = this.products.findIndex(product => product.id === updatedProduct.id);
           this.products[index] = updatedProduct;
@@ -187,16 +242,9 @@ export class AdmindashboardComponent implements OnInit {
           this.displayAlert('Product updated successfully');
           this.showSection('products');
         });
-      };
-      reader.readAsDataURL(this.selectedFile);
+      }
     } else {
-      this.authService.updateProduct(id, this.editingProduct!).subscribe(updatedProduct => {
-        const index = this.products.findIndex(product => product.id === updatedProduct.id);
-        this.products[index] = updatedProduct;
-        this.editingProduct = null;
-        this.displayAlert('Product updated successfully');
-        this.showSection('products');
-      });
+      this.displayAlert('Please fill all required fields', 'error');
     }
   }
 
@@ -214,25 +262,29 @@ export class AdmindashboardComponent implements OnInit {
   }
 
   addCategory(): void {
-    if (this.selectedFile) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.newCategory.image_base64 = (e.target?.result as string).split(',')[1];
+    if (this.newCategory.title) {
+      if (this.selectedFile) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.newCategory.image_base64 = (e.target?.result as string).split(',')[1];
+          this.authService.addCategory(this.newCategory).subscribe(() => {
+            this.loadCategories();
+            this.resetNewCategory();
+            this.displayAlert('Category added successfully');
+            this.showSection('categories');
+          });
+        };
+        reader.readAsDataURL(this.selectedFile);
+      } else {
         this.authService.addCategory(this.newCategory).subscribe(() => {
           this.loadCategories();
           this.resetNewCategory();
           this.displayAlert('Category added successfully');
           this.showSection('categories');
         });
-      };
-      reader.readAsDataURL(this.selectedFile);
+      }
     } else {
-      this.authService.addCategory(this.newCategory).subscribe(() => {
-        this.loadCategories();
-        this.resetNewCategory();
-        this.displayAlert('Category added successfully');
-        this.showSection('categories');
-      });
+      this.displayAlert('Please fill all required fields', 'error');
     }
   }
 
